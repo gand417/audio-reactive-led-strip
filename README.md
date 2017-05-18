@@ -137,7 +137,7 @@ sudo apt-get update
 sudo apt-get install python-numpy python-scipy python-pyaudio
 ```
 
-## Install ws281x library
+## In case you're using a WS281x (neopixel) strip, install ws281x library
 To install the ws281x library I recommend following this [Adafruit tutorial](https://learn.adafruit.com/neopixels-on-raspberry-pi/software).
 ```
 sudo apt-get install build-essential python-dev git scons swig
@@ -147,6 +147,21 @@ scons
 cd python
 sudo python setup.py install
 ```
+
+## If using an APA102 (dotstar) LED strip, install the required library
+```
+sudo apt-get install build-essential python-dev git
+git clone https://github.com/adafruit/Adafruit_DotStar_Pi.git
+cd Adafruit_DotStar_Pi
+sudo python setup.py install
+```
+
+## Enable SPI on the Raspberry Pi for APA102 communications
+In order to communicate with the APA102 over SPI (instead of "bit-bang" mode), you'll need the required kernel module. Enable it in raspi-config under "Advanced Options" or add the following to /boot/config.txt:
+```
+dtparam=spi=on
+```
+Perform a reboot in order to load the module and enable SPI usage.
 
 ## Audio device configuration
 For the Raspberry Pi, a USB audio device needs to be configured as the default audio device.

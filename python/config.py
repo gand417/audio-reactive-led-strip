@@ -3,7 +3,10 @@ from __future__ import print_function
 from __future__ import division
 import os
 
-DEVICE = 'esp8266'
+LED_TYPE = 'apa102'
+"""Type of LED strip. Must be 'ws2812' (aka neopixel) or 'apa102' (aka dotstar)"""
+
+DEVICE = 'pi'
 """Device used to control LED strip. Must be 'pi',  'esp8266' or 'blinkstick'
 
 'esp8266' means that you are using an ESP8266 module to control the LED strip
@@ -25,30 +28,40 @@ if DEVICE == 'esp8266':
     """Set to False because the firmware handles gamma correction + dither"""
 
 if DEVICE == 'pi':
-    LED_PIN = 18
-    """GPIO pin connected to the LED strip pixels (must support PWM)"""
-    LED_FREQ_HZ = 800000
-    """LED signal frequency in Hz (usually 800kHz)"""
-    LED_DMA = 5
-    """DMA channel used for generating PWM signal (try 5)"""
-    BRIGHTNESS = 255
+    if LED_TYPE == 'ws2812':
+        LED_PIN = 18
+        """GPIO pin connected to the WS2812 strip pixels (must support PWM)"""
+        LED_FREQ_HZ = 800000
+        """LED signal frequency in Hz (usually 800kHz)"""
+        LED_DMA = 5
+        """DMA channel used for generating PWM signal (try 5)"""
+    if LED_TYPE == 'apa102':
+        APA102_DATA_PIN = 10
+        """GPIO pin connected to the APA102 data line. Use 10 (MISO) for SPI"""
+        APA102_CLK_PIN = 11
+        """GPIO pin connected to the APA102 clock line. Use 11 (SCLK) for SPI"""
+        APA102_SPI_SPEED = '8000000'
+        """SPI bus speed in Hz. Up to 32 MHz"""
+        APA102_ORDER = 'brg'
+        """Order of the colors red, green and blue. Depends on strip manufacturer"""
+    BRIGHTNESS = 16
     """Brightness of LED strip between 0 and 255"""
-    LED_INVERT = True
+    LED_INVERT = False
     """Set True if using an inverting logic level converter"""
-    SOFTWARE_GAMMA_CORRECTION = True
+    SOFTWARE_GAMMA_CORRECTION = False
     """Set to True because Raspberry Pi doesn't use hardware dithering"""
 
 if DEVICE == 'blinkstick':
     SOFTWARE_GAMMA_CORRECTION = True
     """Set to True because blinkstick doesn't use hardware dithering"""
 
-USE_GUI = True
+USE_GUI = False
 """Whether or not to display a PyQtGraph GUI plot of visualization"""
 
 DISPLAY_FPS = True
 """Whether to display the FPS when running (can reduce performance)"""
 
-N_PIXELS = 60
+N_PIXELS = 40
 """Number of pixels in the LED strip (must match ESP8266 firmware)"""
 
 GAMMA_TABLE_PATH = os.path.join(os.path.dirname(__file__), 'gamma_table.npy')
@@ -57,7 +70,7 @@ GAMMA_TABLE_PATH = os.path.join(os.path.dirname(__file__), 'gamma_table.npy')
 MIC_RATE = 44100
 """Sampling frequency of the microphone in Hz"""
 
-FPS = 60
+FPS = 30
 """Desired refresh rate of the visualization (frames per second)
 
 FPS indicates the desired refresh rate, or frames-per-second, of the audio

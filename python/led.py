@@ -11,11 +11,23 @@ if config.DEVICE == 'esp8266':
     _sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 # Raspberry Pi controls the LED strip directly
 elif config.DEVICE == 'pi':
-    import neopixel
-    strip = neopixel.Adafruit_NeoPixel(config.N_PIXELS, config.LED_PIN,
-                                       config.LED_FREQ_HZ, config.LED_DMA,
-                                       config.LED_INVERT, config.BRIGHTNESS)
+    if config.LED_TYPE == 'ws2812':
+        import neopixel
+        strip = neopixel.Adafruit_NeoPixel(config.N_PIXELS, config.LED_PIN,
+                                           config.LED_FREQ_HZ, config.LED_DMA,
+                                           config.LED_INVERT, config.BRIGHTNESS)
+    elif config.LED_TYPE == 'apa102':
+        from dotstar import Adafruit_DotStar
+        # Use SPI bus to communicate with the APA102
+        if config.APA102_DATA_PIN == '10':
+            strip = Adafruit_DotStar(config.N_PIXELS, config.APA102_SPI_SPEED,
+                                     order='config.APA102_ORDER')
+        # Communicate with APA102 using normal GPIO pins
+        else:
+            strip = Adafruit_DotStar(config.N_PIXELS, config.APA102_DATA_PIN,
+                                      config.APA102_CLK_PIN)
     strip.begin()
+    strip.setBrightness(config.BRIGHTNESS)
 elif config.DEVICE == 'blinkstick':
     from blinkstick import blinkstick
     import signal
@@ -104,7 +116,10 @@ def _update_pi():
         # Ignore pixels if they haven't changed (saves bandwidth)
         if np.array_equal(p[:, i], _prev_pixels[:, i]):
             continue
-        strip._led_data[i] = rgb[i]
+        if config.LED_TYPE == 'ws2812':
+            strip._led_data[i] = rgb[i]
+        elif config.LED_TYPE == 'apa102':
+            strip.setPixelColor(i,rgb[i])
     _prev_pixels = np.copy(p)
     strip.show()
 
